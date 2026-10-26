@@ -1,0 +1,242 @@
+/* 기본 · 공용 스타일: 글꼴, 버튼, 세그먼트, 작은 유틸 클래스 */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+}
+.muted {
+  color: var(--muted);
+}
+.dim {
+  opacity: 0.8;
+}
+.small {
+  font-size: 12.5px;
+}
+.error {
+  color: var(--danger);
+}
+.strike {
+  text-decoration: line-through;
+}
+.next-text {
+  color: var(--next);
+  font-weight: 600;
+}
+.prev-text {
+  color: var(--prev);
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+}
+.row.gap {
+  gap: 8px;
+}
+.row.center {
+  justify-content: center;
+}
+.grow {
+  flex: 1;
+}
+/* 선 아이콘 (lucide) */
+.lucide {
+  flex-shrink: 0;
+}
+.icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+p.icon-text,
+li.icon-text {
+  display: flex;
+}
+
+/* ───────── 버튼 · 세그먼트 ───────── */
+.btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 8px 14px;
+  min-height: 40px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+.btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.btn.primary:hover:not(:disabled) {
+  background: var(--accent);
+  filter: brightness(1.08);
+}
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+}
+.btn.icon {
+  width: 40px;
+  padding: 0;
+}
+.btn.small {
+  min-height: 32px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn:focus-visible,
+.seg button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.seg {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.seg button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.seg button.on {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.seg button:disabled {
+  opacity: 0.5;
+}
+.seg.small button {
+  padding: 5px 9px;
+  font-size: 13px;
+}
+.badge {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 5px;
+  margin-left: 4px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot.ok {
+  background: var(--ok);
+}
+.dot.warn {
+  background: var(--warn);
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 작은 꼬리표 (내 동작 · 테스트 기록에서 씀) */
+.tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.tag.good {
+  background: color-mix(in srgb, var(--ok) 18%, transparent);
+  color: var(--ok);
+}
+.tag.bad {
+  background: color-mix(in srgb, var(--warn) 20%, transparent);
+  color: var(--warn);
+}
+
+/* 진행 막대 (캘리브레이션 · 녹화 · 시선 보정에서 같이 씀) */
+.calib-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  margin-top: 4px;
+}
+.calib-bar > div {
+  height: 100%;
+  background: #2dd4bf;
+  transition: width 0.07s linear;
+}

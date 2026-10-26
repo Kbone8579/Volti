@@ -1,0 +1,177 @@
+/* ───────── 시선 모드 ───────── */
+.next-target {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 2;
+}
+.next-target > svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.next-target .nt-bg {
+  fill: color-mix(in srgb, var(--surface) 82%, transparent);
+  stroke: color-mix(in srgb, var(--next) 35%, transparent);
+  stroke-width: 4;
+}
+.next-target .nt-ring {
+  fill: none;
+  stroke: var(--next);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.07s linear;
+}
+.next-target span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--next);
+  margin-left: 3px;
+}
+.next-target.look .nt-bg {
+  fill: color-mix(in srgb, var(--next) 18%, var(--surface));
+}
+.gaze-zone {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border-top: 2px dashed color-mix(in srgb, var(--next) 55%, transparent);
+  border-left: 2px dashed color-mix(in srgb, var(--next) 55%, transparent);
+  border-top-left-radius: 14px;
+  background: color-mix(in srgb, var(--next) 5%, transparent);
+  pointer-events: none;
+  transition: background 0.15s;
+}
+.gaze-zone.on {
+  background: color-mix(in srgb, var(--next) 14%, transparent);
+}
+.gaze-dot {
+  position: fixed;
+  left: -11px;
+  top: -11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.25);
+  pointer-events: none;
+  z-index: 15;
+  transition: transform 0.06s linear;
+}
+.gaze-dot.on {
+  border-color: var(--next);
+  background: color-mix(in srgb, var(--next) 30%, transparent);
+}
+
+.gaze-map {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.gm-score {
+  position: absolute;
+  border: 1.5px solid var(--line);
+  background: color-mix(in srgb, var(--stage) 60%, transparent);
+  border-radius: 3px;
+}
+.gm-zone {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: var(--next-zone);
+  border-top: 1.5px dashed var(--next);
+  border-left: 1.5px dashed var(--next);
+}
+.gm-zone.on {
+  background: color-mix(in srgb, var(--next) 35%, transparent);
+}
+.gm-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+}
+.gm-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.gaze-calib {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  background: rgba(10, 12, 16, 0.82);
+  color: #fff;
+}
+.gc-text {
+  position: absolute;
+  left: 50%;
+  top: 27%;
+  transform: translate(-50%, -50%);
+  width: min(440px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.gc-text strong {
+  font-size: 18px;
+}
+.gc-text span {
+  color: #c9ced6;
+  font-size: 14px;
+}
+.gc-text .calib-bar {
+  width: 100%;
+  margin: 6px 0 4px;
+}
+.gc-text .btn {
+  background: transparent;
+  color: #e8eaed;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.gc-dot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: #2dd4bf;
+  box-shadow: 0 0 0 6px rgba(45, 212, 191, 0.25);
+  animation: gc-shrink 0.65s ease-out;
+}
+.gc-dot::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: #062521;
+}
+@keyframes gc-shrink {
+  from {
+    transform: scale(3.2);
+    opacity: 0.4;
+  }
+}

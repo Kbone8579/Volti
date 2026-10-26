@@ -1,0 +1,41 @@
+// Cloudflare 배포 설정 — `npm run deploy`
+// 배포 주소: https://volti.<계정 서브도메인>.workers.dev
+// 도메인 연결: Cloudflare 대시보드 → Workers & Pages → volti → Settings → Domains & Routes
+//
+// 화면 파일(빌드된 dist/client)은 그대로 정적 파일로 서비스되고(무료·무제한), /api/* 요청만 server/index.ts 가 처리해요.
+// DB(D1)와 파일 저장소(R2)는 처음 배포할 때 wrangler 가 자동으로 만들어요 (ID 를 안 적어도 됨).
+// R2 는 Cloudflare 대시보드에서 한 번 켜 둬야 해요 (README 「Cloudflare 배포」).
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "volti",
+	"main": "server/index.ts",
+	"compatibility_date": "2026-09-01",
+	"assets": {
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	// 계정 · 라이브러리 목록 · 설정
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "volti",
+			"database_id": "b858c362-3a05-4231-99a5-d006c36a91b5"
+		}
+	],
+	// 악보 파일 (PDF · 이미지) · 썸네일
+	"r2_buckets": [
+		{
+			"binding": "FILES",
+			"bucket_name": "volti-files"
+		}
+	],
+	"vars": {
+		// Google Cloud 콘솔에서 만든 「OAuth 클라이언트 ID」 (공개해도 되는 값 · 보안 비밀(secret)은 필요 없음).
+		// 비어 있으면 로그인 버튼이 안 보여요. 만드는 법: README 「Google 로그인 켜기」
+		"GOOGLE_CLIENT_ID": "885982324650-rgkj13ejv4dlktle3l3clnkjroo0h61m.apps.googleusercontent.com",
+		// 한 사람이 서버에 올릴 수 있는 악보 파일 용량 (MB)
+		"USER_QUOTA_MB": "500"
+	}
+}

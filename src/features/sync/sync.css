@@ -1,0 +1,33 @@
+/* ───────── 동기화 표시 (상단 바 · 라이브러리) ───────── */
+.sync-ind {
+  color: var(--muted);
+}
+.sync-ind.warn {
+  color: var(--warn);
+}
+.sync-ind.busy svg {
+  animation: spin 1.2s linear infinite;
+  color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sync-ind.busy svg {
+    animation: none;
+  }
+}
+
+/* 글처럼 흐르게 (좁은 화면에서 자연스럽게 줄바꿈, 버튼 글자는 한 덩어리로) */
+.backup-note .link-btn {
+  white-space: nowrap;
+}
+.link-btn {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

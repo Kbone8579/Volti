@@ -1,0 +1,11 @@
+node_modules
+dist
+# npm install 시 scripts/copy-assets.mjs 가 다시 만듦
+public/mediapipe
+public/pdfjs
+.DS_Store
+*.log
+
+# 개발용 비밀 · 로컬 서버 데이터
+.dev.vars
+.wrangler

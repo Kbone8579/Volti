@@ -1,0 +1,40 @@
+/* ───────── 알림 (아래쪽 토스트) ───────── */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: #1f2329;
+  color: #fff;
+  box-shadow: var(--shadow);
+  font-weight: 600;
+  z-index: 40;
+  animation: toast-in 0.2s ease-out;
+}
+.toast.has-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.toast-action {
+  border: 0;
+  background: transparent;
+  color: #5eead4;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 4px 6px;
+  white-space: nowrap;
+}
+.toast.warn {
+  background: #4a3410;
+  color: #fde68a;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}

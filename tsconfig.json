@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": ["vite/client"],
+    /* @/ = src/ — 예: import { ScoreViewer } from '@/features/score' · @server/ = server/ (서버와 같이 쓰는 API 타입) */
+    "paths": { "@/*": ["./src/*"], "@server/*": ["./server/*"] }
+  },
+  "include": ["src"]
+}

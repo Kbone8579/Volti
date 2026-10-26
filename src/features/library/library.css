@@ -1,0 +1,263 @@
+/* ───────── 라이브러리 ───────── */
+.library {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.lib-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 18px 20px 8px;
+}
+.lib-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.lib-title h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.lib-actions {
+  display: flex;
+  gap: 8px;
+}
+.lib-tools {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 6px 20px 12px;
+}
+.lib-search {
+  flex: 1;
+  min-width: 180px;
+  max-width: 420px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+.lib-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 20px 28px;
+}
+.lib-empty {
+  /* 아래 정책 링크 한 줄만큼 빼서 비었을 때 스크롤이 생기지 않게 */
+  height: calc(100% - 44px);
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.lib-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  padding-top: 24px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.lib-foot a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+.lib-foot a:hover {
+  color: var(--text);
+}
+.lib-empty h3 {
+  margin: 0;
+  font-size: 20px;
+}
+.lib-empty p {
+  margin: 0;
+}
+.lib-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 18px 16px;
+}
+.lib-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.lib-thumb {
+  position: relative;
+  aspect-ratio: 1 / 1.35;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  padding: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.lib-thumb:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.lib-thumb:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.lib-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+.lib-card.current .lib-thumb {
+  border: 2px solid var(--accent);
+}
+.lib-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.lib-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.12);
+}
+.lib-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.lib-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.lib-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lib-rename {
+  border: 1px solid var(--accent);
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-weight: 700;
+  min-width: 0;
+}
+.lib-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: -8px;
+}
+.lib-row .btn.small {
+  min-height: 28px;
+  padding: 4px 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.lib-row .error {
+  margin-left: 8px;
+}
+.lib-row .lib-del:hover:not(:disabled) {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.lib-selectbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 20px 8px;
+  padding: 8px 10px 8px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.lib-check {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.lib-check.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.lib-grid.selecting .lib-thumb img {
+  transition: opacity 0.12s;
+}
+.lib-grid.selecting .lib-card:not(.selected) .lib-thumb img {
+  opacity: 0.75;
+}
+.lib-card.selected .lib-thumb {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.btn.danger:disabled {
+  opacity: 0.45;
+}
+.btn.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff !important;
+}
+@media (max-width: 760px) {
+  .lib-selectbar {
+    margin: 0 16px 8px;
+  }
+  .lib-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 14px 12px;
+  }
+  .lib-head,
+  .lib-tools,
+  .lib-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

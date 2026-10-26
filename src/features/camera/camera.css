@@ -1,0 +1,219 @@
+/* ───────── 카메라 패널 ───────── */
+.panel {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cam {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #0b0c0e;
+}
+.cam-video,
+.cam-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cam[data-mirror='true'] .cam-video,
+.cam[data-mirror='true'] .cam-overlay {
+  transform: scaleX(-1);
+}
+.cam-idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  text-align: center;
+  color: #e8eaed;
+  background: #15171b;
+}
+.cam-idle .muted {
+  color: #9aa0a8;
+}
+.cam-hud {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+.chip.ok {
+  color: #86efac;
+}
+.chip.warn {
+  color: #fcd34d;
+}
+.chip.ghost {
+  color: #d1d5db;
+}
+.cam-calib {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.hint {
+  margin: -2px 2px 0;
+}
+
+/* 게이지 */
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.meter-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12.5px;
+}
+.meter-value {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.meter-track {
+  position: relative;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.meter-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.meter-zone.next {
+  background: var(--next-zone);
+  border-left: 2px dashed var(--next);
+}
+.meter-zone.prev {
+  background: var(--prev-zone);
+  border-right: 2px dashed var(--prev);
+}
+.meter-zone.prev.off {
+  background: repeating-linear-gradient(-45deg, transparent 0 6px, var(--line) 6px 7px);
+  border-right-color: var(--line);
+}
+.meter-center {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--muted);
+  opacity: 0.5;
+}
+.meter-fill {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  border-radius: 3px;
+  opacity: 0.55;
+}
+.meter-fill.pos {
+  background: var(--next);
+}
+.meter-fill.neg {
+  background: var(--prev);
+}
+.meter-marker {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  width: 4px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--text);
+}
+.meter-marker.hot {
+  background: var(--warn);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 35%, transparent);
+}
+.hold-track {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.hold-fill {
+  height: 100%;
+  transition: width 0.07s linear, opacity 0.15s;
+}
+.hold-fill.next {
+  background: var(--next);
+}
+.hold-fill.prev {
+  background: var(--prev);
+}
+
+.chart {
+  width: 100%;
+  height: 84px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  display: block;
+}
+
+/* 제스처 종류 탭 */
+.panel .seg[role='tablist'] button {
+  padding: 7px 4px;
+  font-size: 13.5px;
+}
+
+/* ───────── 넘기기 전 대기 (패널의 시간 고르기) ───────── */
+.delay-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.delay-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.delay-row .seg button {
+  padding: 5px 7px;
+  font-size: 12.5px;
+}
+
+/* 좁은 화면: 패널이 아래에 있으니 카메라 화면을 작게 */
+@media (max-width: 760px) {
+  .cam {
+    max-width: 240px;
+    width: 100%;
+    margin: 0 auto;
+  }
+}

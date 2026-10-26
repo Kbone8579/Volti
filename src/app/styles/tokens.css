@@ -1,0 +1,54 @@
+/* 색 · 크기 변수 (밝은/어두운 화면) — 모든 화면이 이 변수를 씀 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
+:root {
+  --bg: #f3f1ec;
+  --surface: #ffffff;
+  --surface-2: #f0ede6;
+  --stage: #dcd8cf;
+  --text: #1c1f24;
+  --muted: #6b7079;
+  --line: #e2ded5;
+  --accent: #1f6f66;
+  --accent-ink: #ffffff;
+  --next: #0f9d8a;
+  --prev: #7c5cd6;
+  --next-zone: rgba(15, 157, 138, 0.12);
+  --prev-zone: rgba(124, 92, 214, 0.1);
+  --warn: #c27c0e;
+  --danger: #d14343;
+  --ok: #1a9a55;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --radius: 12px;
+  --panel-w: 320px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121418;
+    --surface: #1a1d23;
+    --surface-2: #22262e;
+    --stage: #0c0d10;
+    --text: #e8eaed;
+    --muted: #9aa0a8;
+    --line: #2c3038;
+    --accent: #2dd4bf;
+    --accent-ink: #062521;
+    --next: #2dd4bf;
+    --prev: #a78bfa;
+    --next-zone: rgba(45, 212, 191, 0.13);
+    --prev-zone: rgba(167, 139, 250, 0.12);
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --ok: #4ade80;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+
+@media (min-width: 1400px) {
+  :root {
+    --panel-w: 360px;
+  }
+}

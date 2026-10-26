@@ -1,0 +1,648 @@
+/* ───────── 30초 체험 ───────── */
+.tour-welcome,
+.tour-card {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.tour-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(16, 18, 22, 0.5);
+  backdrop-filter: blur(3px);
+  animation: tour-fade 0.2s ease-out;
+}
+.tour-welcome {
+  width: min(460px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 30px 28px 20px;
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: tour-pop 0.24s ease-out;
+}
+.tour-mark {
+  width: 48px;
+  height: 48px;
+}
+.tour-welcome h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.tour-lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  text-wrap: pretty;
+}
+.tour-lead b {
+  font-weight: 800;
+}
+.tour-welcome .gesture-demo {
+  width: min(260px, 80%);
+}
+.tour-preview {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.tour-preview li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 14px;
+  font-weight: 700;
+}
+.tour-preview b {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 12px;
+}
+.btn.big {
+  min-height: 48px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+.tour-welcome .tour-actions .btn {
+  min-width: 132px;
+}
+.tour-also {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  font-size: 14px;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+.tour-also b {
+  color: var(--accent);
+}
+.tour-foot {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-wrap: balance;
+}
+.tour-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 안내 카드: 해당 부분 옆에 붙어서 화살표로 가리킴 */
+.tour-card {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 46;
+  width: min(400px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.22),
+    0 0 0 6px color-mix(in srgb, var(--accent) 12%, transparent);
+  transition:
+    top 0.25s ease,
+    left 0.25s ease,
+    right 0.25s ease;
+}
+.tour-card.at-side {
+  position: fixed;
+  left: auto;
+  transform: none;
+  width: 380px;
+  max-height: none;
+}
+.tour-card.at-below {
+  position: fixed;
+  transform: none;
+  width: 400px;
+  max-width: calc(100vw - 24px);
+  max-height: none;
+}
+.tour-arrow {
+  position: absolute;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+}
+.tour-card.at-side .tour-arrow {
+  right: -10px;
+  top: var(--arrow);
+  transform: translateY(-50%) rotate(45deg);
+  border-left: 0;
+  border-bottom: 0;
+}
+.tour-card.at-below .tour-arrow {
+  top: -10px;
+  left: var(--arrow);
+  transform: translateX(-50%) rotate(45deg);
+  border-right: 0;
+  border-bottom: 0;
+}
+.tour-body {
+  position: relative;
+  z-index: 2;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 20px 16px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: tour-in 0.25s ease-out;
+}
+.tour-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  color: var(--muted);
+}
+.tour-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 36px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.tour-progress {
+  display: inline-flex;
+  gap: 4px;
+}
+.tour-progress i {
+  width: 16px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.tour-progress i.done {
+  background: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.tour-progress i.on {
+  width: 26px;
+  background: var(--accent);
+}
+.tour-title {
+  margin: 0;
+  padding-right: 28px;
+  font-size: 21px;
+  line-height: 1.32;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-wrap: balance;
+}
+.tour-dir {
+  font-style: normal;
+  color: var(--accent);
+}
+.tour-card .tour-lead {
+  font-size: 15.5px;
+}
+.tour-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.tour-note {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.tour-note.error {
+  color: var(--danger);
+}
+.tour-visual {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.tour-visual .gesture-demo {
+  flex: 0 0 116px;
+  width: 116px;
+}
+.tour-visual .tour-lead {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.tour-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.tour-bar > div {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.07s linear;
+}
+.tour-live {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tour-meter {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.tm-amount,
+.tm-hold {
+  position: absolute;
+  inset: 0 auto 0 0;
+  transition: width 0.07s linear;
+}
+.tm-amount {
+  background: color-mix(in srgb, var(--next) 28%, transparent);
+}
+.tm-hold {
+  background: var(--next);
+}
+.tour-cue {
+  min-height: 22px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--muted);
+}
+.tour-cue.ok {
+  color: var(--next);
+}
+.tour-cue.warn {
+  color: var(--warn);
+}
+.tour-card .tour-actions {
+  justify-content: flex-start;
+  margin-top: 2px;
+}
+.tour-keys {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tour-keys li {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  font-size: 14px;
+  font-weight: 700;
+}
+.tour-tips {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tour-tips li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tour-tips li.tt-main {
+  padding: 10px 12px;
+  margin: 0 -4px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+}
+.tour-tips li.tt-main .tt-icon {
+  background: var(--surface);
+}
+.tour-title.with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tour-ok {
+  color: var(--ok);
+}
+.tt-icon {
+  flex: 0 0 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--accent);
+}
+.tour-tips li > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 15px;
+}
+.tour-tips small {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.tour-ring {
+  position: fixed;
+  z-index: 45;
+  pointer-events: none;
+  border: 2.5px solid var(--accent);
+  border-radius: 14px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+  animation: tour-pulse 1.6s ease-in-out infinite;
+  transition:
+    left 0.15s,
+    top 0.15s,
+    width 0.15s,
+    height 0.15s;
+}
+.spinner.tiny {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+  margin-right: 4px;
+  vertical-align: -2px;
+}
+.tour-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+}
+.tour-callout > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 동작 그림: 고개를 돌림 → 막대가 참 → 악보가 넘어감 → 정면으로 */
+.gesture-demo {
+  display: block;
+  height: auto;
+  overflow: visible;
+  --gd-shift: 7px;
+}
+.gesture-demo.left {
+  --gd-shift: -7px;
+}
+.gd-head {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gd-squish 3.6s ease-in-out infinite;
+}
+.gd-face {
+  fill: var(--surface);
+  stroke: var(--text);
+  stroke-width: 2.2;
+}
+.gd-feat {
+  fill: var(--text);
+  animation: gd-turn 3.6s ease-in-out infinite;
+}
+.gd-line {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gd-track {
+  fill: var(--surface-2);
+  stroke: var(--line);
+}
+.gd-fill {
+  fill: var(--next);
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: gd-hold 3.6s linear infinite;
+}
+.gd-arrow {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gd-page {
+  fill: var(--surface);
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+.gd-staff line {
+  stroke: var(--muted);
+  stroke-width: 1;
+  opacity: 0.55;
+}
+.gd-num {
+  font-size: 9px;
+  font-weight: 700;
+  fill: var(--muted);
+  text-anchor: end;
+}
+.gd-top {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: gd-flip 3.6s ease-in-out infinite;
+}
+@keyframes gd-turn {
+  0%,
+  18% {
+    transform: translateX(0);
+  }
+  28%,
+  72% {
+    transform: translateX(var(--gd-shift));
+  }
+  84%,
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes gd-squish {
+  0%,
+  18% {
+    transform: scaleX(1);
+  }
+  28%,
+  72% {
+    transform: scaleX(0.93);
+  }
+  84%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+@keyframes gd-hold {
+  0%,
+  30% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  58%,
+  72% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  80% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+  81%,
+  100% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}
+@keyframes gd-flip {
+  0% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+  6%,
+  58% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  70% {
+    opacity: 1;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+}
+@keyframes tour-pulse {
+  50% {
+    box-shadow: 0 0 0 9px color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+}
+@keyframes tour-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes tour-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes tour-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gd-head,
+  .gd-feat,
+  .gd-fill,
+  .gd-top,
+  .tour-ring,
+  .tour-body {
+    animation: none;
+  }
+  .gd-feat {
+    transform: translateX(var(--gd-shift));
+  }
+  .gd-fill {
+    transform: scaleX(0.7);
+  }
+}
+/* 패널이 아래에 있는 화면: 악보 영역 맨 위에 */
+@media (max-width: 760px) {
+  .tour-card {
+    top: 8px;
+    width: calc(100% - 16px);
+    max-height: calc(100% - 16px);
+  }
+  .tour-body {
+    padding: 14px 16px 12px;
+    gap: 8px;
+  }
+  .tour-title {
+    font-size: 19px;
+  }
+}
+@media (max-width: 480px) {
+  .tour-welcome {
+    padding: 24px 18px 16px;
+  }
+  .tour-welcome h2 {
+    font-size: 21px;
+  }
+  .tour-lead,
+  .tour-card .tour-lead {
+    font-size: 15px;
+  }
+  .tour-title {
+    font-size: 18px;
+  }
+  .tour-visual {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+  .tour-visual .gesture-demo {
+    flex-basis: 84px;
+    width: 84px;
+  }
+  .tour-visual .tour-lead {
+    font-size: 14.5px;
+  }
+  .tour-card .btn {
+    min-height: 36px;
+  }
+}

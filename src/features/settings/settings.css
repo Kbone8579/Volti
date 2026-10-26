@@ -1,0 +1,194 @@
+/* ───────── 설정 서랍 ───────── */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 20;
+}
+.scrim.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transform: translateX(100%);
+  transition: transform 0.24s ease;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+}
+.drawer.open {
+  transform: none;
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  padding-top: max(12px, env(safe-area-inset-top));
+  border-bottom: 1px solid var(--line);
+}
+.drawer-head .seg {
+  flex: 1;
+}
+.drawer-body {
+  padding: 4px 16px 32px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.drawer-body h3 {
+  margin: 14px 0 0;
+  font-size: 15px;
+}
+.drawer-body p {
+  margin: -4px 0 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field-head {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+.field-head strong {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.field input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.field input[type='text'] {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 9px 10px;
+}
+
+.toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.toggle span {
+  display: flex;
+  flex-direction: column;
+}
+.toggle small {
+  font-weight: 400;
+}
+.toggle input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.toggle.compact {
+  padding: 2px 2px;
+  font-size: 13.5px;
+}
+.toggle.compact small {
+  font-size: 12px;
+}
+
+.kv,
+.raw {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 13.5px;
+}
+.kv strong,
+.raw b {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.stats > div {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+}
+.stats small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.stats strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.log {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.log-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 52px 64px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.log-item .tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.log-item.bad {
+  border-color: color-mix(in srgb, var(--danger) 50%, transparent);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+}
+.log-item.bad .tag {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* 좁은 화면 */
+@media (max-width: 760px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

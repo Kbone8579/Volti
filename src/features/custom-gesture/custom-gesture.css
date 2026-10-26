@@ -1,0 +1,97 @@
+/* ───────── 내 동작 ───────── */
+.learned {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 13.5px;
+}
+/* [다음] [구분 잘 됨] ········ [다시]
+   눈썹 안쪽 올림 ↑ · …  (설명은 다음 줄에 넓게) */
+.learned-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  column-gap: 8px;
+  row-gap: 2px;
+  align-items: center;
+}
+.learned-row > span:nth-child(2) {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  line-height: 1.45;
+}
+.learned-row > .tag {
+  justify-self: start;
+}
+.learned-redo {
+  grid-column: 4;
+  min-height: 28px;
+  padding: 2px 6px;
+  gap: 3px;
+  color: var(--muted);
+}
+.learned-add {
+  grid-template-columns: auto 1fr auto;
+  margin: 2px -6px 0;
+  padding: 6px;
+  border-radius: 8px;
+}
+.learned-add.wanted {
+  background: color-mix(in srgb, var(--prev) 10%, var(--surface));
+  outline: 1px dashed color-mix(in srgb, var(--prev) 45%, transparent);
+}
+.learned-add > span:nth-child(2) {
+  grid-column: auto;
+  grid-row: auto;
+}
+.learned-add .btn {
+  min-height: 30px;
+  padding: 4px 10px;
+}
+
+/* 녹화 중 배너 */
+.rec-banner {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: min(460px, calc(100% - 24px));
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(16, 18, 22, 0.88);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--shadow);
+}
+.rec-banner > span {
+  color: #c9ced6;
+  font-size: 13.5px;
+}
+.rec-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: blink 1s ease-in-out infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+.rec-banner .btn {
+  align-self: flex-end;
+  background: transparent;
+  color: #e8eaed;
+  border-color: rgba(255, 255, 255, 0.25);
+}

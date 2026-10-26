@@ -11,7 +11,7 @@ import type { ApiConfig, ApiUser } from '../api-types'
 import { InvalidTokenError, verifyGoogleIdToken } from '../auth/google'
 import { createSession, currentUser, endSession, requireUser, toApiUser, upsertUser } from '../auth/session'
 import type { Env } from '../env'
-import { cookieHeader, HttpError, json, randomToken, readCookie, readJson } from '../http'
+import { cookieHeader, HttpError, json, randomToken, readCookie, readJson, secure } from '../http'
 import { deleteAllUserFiles } from './scores'
 
 const OAUTH_COOKIE = 'volti_oauth'
@@ -35,7 +35,7 @@ const safeReturn = (raw: string | null) => (raw && raw.startsWith('/') && !raw.s
 function backTo(request: Request, path: string, result: 'ok' | 'cancelled' | 'error', cookies: string[]): Response {
   const url = new URL(path, new URL(request.url).origin)
   url.searchParams.set('login', result)
-  const headers = new Headers({ location: url.pathname + url.search + url.hash, 'cache-control': 'no-store' })
+  const headers = secure(new Headers({ location: url.pathname + url.search + url.hash, 'cache-control': 'no-store' }))
   for (const c of cookies) headers.append('set-cookie', c)
   return new Response(null, { status: 303, headers })
 }
@@ -60,7 +60,7 @@ export async function startGoogleLogin(env: Env, request: Request): Promise<Resp
   }).toString()
   // Google 이 다른 사이트에서 POST 로 돌아오므로 SameSite=None (로그인 쿠키가 아니라 10분짜리 일회용 확인값)
   const cookie = cookieHeader(OAUTH_COOKIE, JSON.stringify({ state, nonce, back }), 600, { path: OAUTH_PATH, sameSite: 'None' })
-  return new Response(null, { status: 302, headers: { location: auth.toString(), 'set-cookie': cookie, 'cache-control': 'no-store' } })
+  return new Response(null, { status: 302, headers: secure(new Headers({ location: auth.toString(), 'set-cookie': cookie, 'cache-control': 'no-store' })) })
 }
 
 /** 2) Google 이 돌아옴 → 확인 → 로그인 쿠키 */

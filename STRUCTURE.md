@@ -146,6 +146,7 @@ features/<기능>/
 | `scripts/copy-assets.mjs` | `node_modules` 의 MediaPipe WASM · pdf.js 글꼴/cmap 을 `public/` 으로 복사 (git 에는 안 올라감) |
 | `public/brand/` | 로고 SVG (가로형·세로형·마크, 밝은/어두운) |
 | `public/*.png, favicon.svg, manifest.webmanifest` | 탭 아이콘 · 홈 화면 아이콘 · PWA 정보 |
+| `public/_headers` | 화면 파일에 붙는 보안 헤더 (Cloudflare 가 읽음): 불러와도 되는 곳 목록(CSP — 우리 사이트 · 글꼴 CDN · 얼굴 인식 모델 · Google 프로필 사진), 다른 사이트에 품기 금지, 카메라만 허용 등. 새 외부 주소를 쓰면 여기에 추가 |
 | `public/privacy.html` · `public/terms.html` · `public/legal.css` | 개인정보처리방침 · 이용약관 (앱과 따로인 정적 페이지, 같은 색 · 글꼴). 배포하면 `/privacy` · `/terms` 로 열리고(`.html` 주소는 그쪽으로 넘어감), Google 로그인 설정의 브랜딩 링크로 씀. 앱 안에서는 라이브러리 아래 · 로그인 권유 창 · 계정 탭에서 링크 |
 
 ### 3-2. `src/main.tsx` — 시작점
@@ -161,7 +162,7 @@ features/<기능>/
 | `styles/tokens.css` | 색·크기 변수. `@media (prefers-color-scheme: dark)` 에서 어두운 색으로 바뀜. 글꼴(Pretendard) 불러오기 |
 | `styles/base.css` | 기본 글꼴·크기, `.btn`(버튼), `.seg`(세그먼트), `.tag`(꼬리표), `.calib-bar`(진행 막대), `.icon-text`, `.muted` 같은 공용 클래스 |
 | `styles/layout.css` | `.toolbar`, `.main`(악보 + 패널 그리드), `.panel-tab`(패널 접기 탭), 끌어다 놓기 안내, 그리고 폰(≤760px)·아주 좁은 폰(≤480px)·태블릿 세로(761~1100px) 배치 |
-| `App.flow.test.tsx` | 앱 전체를 jsdom 에 그리고, 카메라·악보 파일·저장소·서버(fetch)를 가짜로 바꿔서 실제 사용 흐름을 확인 (25개) |
+| `App.flow.test.tsx` | 앱 전체를 jsdom 에 그리고, 카메라·악보 파일·저장소·서버(fetch)를 가짜로 바꿔서 실제 사용 흐름을 확인 (26개) |
 
 ### 3-4. `src/features/` — 기능별
 
@@ -181,11 +182,13 @@ features/<기능>/
 #### `library/` — 내 악보 보관함
 | 파일 | 하는 일 |
 |---|---|
-| `components/LibraryView.tsx` | 라이브러리 화면: 썸네일 목록, 검색, 정렬, 선택 삭제, 이름 바꾸기, 30초 체험 버튼. 「어디에 저장되는지」 한 줄은 `storageNote` 자리(sync 의 `BackupNote`), 제목 아래 알림 띠는 `notice` 자리(account 의 `BackupWarning`)로 받음 |
+| `components/LibraryView.tsx` | 라이브러리 화면: 썸네일 목록, 검색, 정렬, 선택 삭제 · 내려받기, 전체 내려받기, 이름 바꾸기, 30초 체험 버튼. 「어디에 저장되는지」 한 줄은 `storageNote` 자리(sync 의 `BackupNote`), 제목 아래 알림 띠는 `notice` 자리(account 의 `BackupWarning`)로 받음 |
 | `hooks/useLibrary.ts` | 목록 상태 (불러오기 · 새로고침 · 저장 공간), 처음 실행 때 샘플 악보 한 번 넣기 |
+| `lib/exportLibrary.ts` | 「내려받기」: 원본 파일을 ZIP 하나로 (파일 하나 → 「제목.pdf」, 여러 장 → 「제목/원래 이름」, 못 쓰는 글자 · 겹치는 이름 정리), 브라우저 저장(`saveBlob`) |
+| `lib/zip.ts` | 외부 라이브러리 없는 작은 ZIP 만들기 (압축 없이 묶기, 한글 이름 UTF-8, CRC32) |
 | `lib/libraryDb.ts` | IndexedDB 저장소 (`scores` 정보 · `files` 원본 · `deleted` 지운 기록): 같은 파일 찾기(서명), 보던 쪽·배율 저장, 삭제·되돌리기, **고친 시각(`updatedAt`)** 기록, 바뀔 때 알림(`onLibraryChange`), 동기화용 그대로 저장(`saveScore`) · id 바꾸기(`rekeyScore`) |
 | `library.css` | 라이브러리 화면 스타일 |
-| 테스트 | `libraryDb.test.ts`(7) — 가짜 IndexedDB 로 저장·조회·삭제 · 지운 기록 · id 바꾸기 확인 |
+| 테스트 | `libraryDb.test.ts`(7) — 가짜 IndexedDB 로 저장·조회·삭제 · 지운 기록 · id 바꾸기 확인, `exportLibrary.test.ts`(3) — ZIP 이름 규칙 · 만든 ZIP 을 다시 읽어 내용 · CRC 확인 |
 
 #### `camera/` — 웹캠 + 얼굴 인식
 | 파일 | 하는 일 |
@@ -282,7 +285,7 @@ features/<기능>/
 | `freeGuard.ts` | **요금이 나가지 않게** R2 를 쓸 때마다 횟수(달마다 쓰기 45만 · 읽기 450만)와 전체 공간(9GB)을 세서 넘기 전에 멈춤. 횟수는 DB 의 `r2_usage` 표. 지우기는 막지 않음. 목록에 `uploadsPaused` 로 알려 줘서 화면이 큰 파일을 보내지 않음 |
 | `limits.ts` | 한도 상수 (파일 하나 95MB · 악보 하나 300개 파일 · 썸네일 2MB). 화면의 동기화도 올리기 전에 이 값으로 미리 걸러요 |
 | `env.ts` | 서버가 받는 것: `DB`(D1) · `FILES`(R2) · `GOOGLE_CLIENT_ID` · `USER_QUOTA_MB` · `DEV_LOGIN` |
-| `http.ts` | JSON 응답 · 오류 응답(`HttpError`) · 쿠키 읽기/만들기 · CSRF 확인(`X-Volti` 헤더 + 같은 출처) · 무작위 토큰 · 해시 |
+| `http.ts` | JSON 응답 · 오류 응답(`HttpError`) · 보안 헤더(`secure()`) · 쿠키 읽기/만들기 · CSRF 확인(`X-Volti` 헤더 + 같은 출처) · 무작위 토큰 · 해시 |
 | `schema.ts` | DB 표 5개(`users` · `sessions` · `scores` · `settings` · `r2_usage`). 따로 마이그레이션 없이 처음 요청 때 `CREATE TABLE IF NOT EXISTS` |
 | `auth/google.ts` | Google ID 토큰 확인: Google 공개키로 서명 · 우리 앱용인지 · 만료 · 이메일 인증 · 일회용 값(nonce) |
 | `auth/session.ts` | 로그인 유지: 무작위 토큰을 HttpOnly 쿠키로 주고 DB 엔 해시만, 180일 (쓰면 연장) |
@@ -419,13 +422,13 @@ features/<기능>/
 ## 7. 테스트
 
 ```bash
-npm test            # 전체 (100개)
+npm test            # 전체 (104개)
 npm run typecheck   # 타입 검사 (화면 + 서버)
 ```
 
 | 파일 | 개수 | 확인하는 것 |
 |---|---|---|
-| `app/App.flow.test.tsx` | 25 | 실제 사용 흐름 — 시선·고개·내 동작 넘김, 라이브러리, 넘기기 전 대기, 확대, 30초 체험, 계정 · 백업 안내 · 악보 추가 전 로그인 권유 |
+| `app/App.flow.test.tsx` | 26 | 실제 사용 흐름 — 시선·고개·내 동작 넘김, 라이브러리(내려받기 포함), 넘기기 전 대기, 확대, 30초 체험, 계정 · 백업 안내 · 악보 추가 전 로그인 권유 |
 | `features/sync/lib/syncEngine.test.ts` | 9 | 두 기기 동기화 (추가 · 고치기 · 지우기 · 되살리기 · 합치기 · 공간 부족 · 서버 무료 한도 · 오프라인 · 설정) |
 | `features/sync/lib/syncPlan.test.ts` | 6 | 동기화 계획 규칙 |
 | `features/gestures/lib/gestures.test.ts` | 13 | 판정기(유지·쿨다운·중립 복귀·떨림), 캘리브레이션 |
@@ -433,6 +436,7 @@ npm run typecheck   # 타입 검사 (화면 + 서버)
 | `features/custom-gesture/lib/customGesture.test.ts` | 7 | 내 동작 학습·구분, 이전 동작만 추가 |
 | `features/gaze/lib/gaze.test.ts` | 6 | 시선 추정·보정·▶ 칸 판정 |
 | `features/library/lib/libraryDb.test.ts` | 7 | 라이브러리 저장·조회·삭제 · 지운 기록 · id 바꾸기 |
+| `features/library/lib/exportLibrary.test.ts` | 3 | 내려받기 ZIP (이름 규칙 · 내용 · CRC · 한글) |
 | `features/camera/lib/signals.test.ts` | 5 | 얼굴 → 신호 변환 |
 | `features/score/lib/turnScheduler.test.ts` | 5 | 넘기기 전 대기 · 취소 |
 | `features/score/lib/navigation.test.ts` | 4 | 한 쪽/펼치기 쪽 계산 |

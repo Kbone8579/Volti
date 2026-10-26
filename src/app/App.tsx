@@ -23,6 +23,8 @@ import { calibrateGesture, GestureDetector, median, MIN_SAMPLES, type DetectorPh
 import {
   addScore,
   deleteScore,
+  exportFileName,
+  exportLibraryZip,
   fileSignature,
   findBySignature,
   getScoreFiles,
@@ -30,6 +32,7 @@ import {
   listScores,
   requestPersistence,
   restoreScore,
+  saveBlob,
   updateScore,
   useLibrary,
   type LibraryEntry,
@@ -390,6 +393,35 @@ export default function App() {
       setScore(scoreRef.current)
     }
     refreshLibrary()
+  }
+
+  /** 원본 파일을 ZIP 하나로 내려받기 (ids 가 없으면 전체) */
+  const [exporting, setExporting] = useState(false)
+  const exportEntries = async (ids: string[] | null) => {
+    if (exporting) return
+    setExporting(true)
+    try {
+      const all = (await listScores()) as LibraryEntry[]
+      const pick = ids ? all.filter((e) => ids.includes(e.id)) : all
+      const scores: { title: string; files: File[]; createdAt: number }[] = []
+      let failed = 0
+      for (const e of pick) {
+        try {
+          scores.push({ title: e.title, files: await getScoreFiles(e.id), createdAt: e.createdAt })
+        } catch {
+          failed += 1
+        }
+      }
+      if (scores.length === 0) return notify('내려받을 악보 파일을 찾지 못했어요.', 'warn')
+      if (scores.length > 1) notify(`악보 ${scores.length}개를 하나로 묶는 중…`)
+      saveBlob(await exportLibraryZip(scores), exportFileName())
+      notify(`악보 ${scores.length}개를 ZIP 으로 내려받았어요${failed ? ` (${failed}개는 파일이 없어 뺐어요)` : ''}`, failed ? 'warn' : 'ok')
+    } catch (err) {
+      console.error(err)
+      notify(err instanceof Error && err.message ? err.message : '내려받지 못했어요.', 'warn')
+    } finally {
+      setExporting(false)
+    }
   }
 
   /** 여러 개 삭제 — 몇 초 동안 「되돌리기」 가능 (지운 파일을 메모리에 잠시 보관) */
@@ -1282,6 +1314,8 @@ export default function App() {
             onOpen={openEntry}
             onRename={renameEntry}
             onDelete={removeEntries}
+            onExport={exportEntries}
+            exporting={exporting}
             onTour={startTour}
             storageNote={accountReady ? <BackupNote available={unbackedCount === 0} signedIn={signedIn} sync={sync} onLogin={() => openDrawer('account')} /> : undefined}
             notice={unbackedCount > 0 ? <BackupWarning count={unbackedCount} google={!!loginConfig?.google} onLogin={() => goLogin()} /> : undefined}

@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
-import { Check, CirclePlay, Music, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, CirclePlay, Download, Music, Pencil, Plus, Trash2 } from 'lucide-react'
 import { formatBytes, relativeTime, type LibraryEntry } from '../lib/libraryDb'
 
 interface Props {
@@ -17,6 +17,10 @@ interface Props {
   onRename: (id: string, title: string) => void
   /** 삭제 (되돌리기는 앱 알림에서) */
   onDelete: (ids: string[]) => void
+  /** 원본 파일을 ZIP 으로 내려받기 (null = 전체) */
+  onExport: (ids: string[] | null) => void
+  /** 내려받을 파일을 묶는 중 */
+  exporting: boolean
   /** 30초 체험 시작 */
   onTour: () => void
   /** 어디에 저장되는지 한 줄 (features/sync 의 BackupNote). 없으면 「이 브라우저에 저장돼요」 */
@@ -96,6 +100,12 @@ export function LibraryView(p: Props) {
     exitSelect()
   }
 
+  const exportSelected = () => {
+    if (selected.size === 0) return
+    p.onExport([...selected])
+    exitSelect()
+  }
+
   const count = p.entries?.length ?? 0
   const allShownSelected = shown.length > 0 && shown.every((e) => selected.has(e.id))
 
@@ -157,6 +167,9 @@ export function LibraryView(p: Props) {
             {allShownSelected ? '선택 해제' : '모두 선택'}
           </button>
           <span className="grow" />
+          <button className="btn small" onClick={exportSelected} disabled={selected.size === 0 || p.exporting}>
+            <Download size={15} /> 내려받기
+          </button>
           <button className="btn small danger" onClick={deleteSelected} disabled={selected.size === 0}>
             <Trash2 size={15} /> {selected.size > 0 ? `${selected.size}개 ` : ''}삭제
           </button>
@@ -189,6 +202,11 @@ export function LibraryView(p: Props) {
               </button>
             ))}
           </div>
+          {!selecting && (
+            <button className="btn small ghost lib-export" onClick={() => p.onExport(null)} disabled={p.exporting} title="원본 파일(PDF · 이미지 등)을 ZIP 하나로 받아요">
+              <Download size={15} /> {p.exporting ? '묶는 중…' : '전체 내려받기'}
+            </button>
+          )}
         </div>
       )}
 

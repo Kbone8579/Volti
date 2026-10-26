@@ -8,6 +8,7 @@ import './library.css'
 
 export { LibraryView } from './components/LibraryView'
 export { useLibrary } from './hooks/useLibrary'
+export { exportFileName, exportLibraryZip, saveBlob } from './lib/exportLibrary'
 export {
   addScore,
   deleteScore,

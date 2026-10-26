@@ -11,8 +11,16 @@ export class HttpError extends Error {
   }
 }
 
+/** 모든 API 응답에 붙이는 보안 헤더 (화면 파일 쪽은 public/_headers) */
+export function secure(headers: Headers): Headers {
+  headers.set('x-content-type-options', 'nosniff')
+  headers.set('referrer-policy', 'strict-origin-when-cross-origin')
+  headers.set('x-frame-options', 'DENY')
+  return headers
+}
+
 export function json(data: unknown, init: ResponseInit = {}): Response {
-  const headers = new Headers(init.headers)
+  const headers = secure(new Headers(init.headers))
   headers.set('content-type', 'application/json; charset=utf-8')
   headers.set('cache-control', 'no-store')
   return new Response(JSON.stringify(data), { ...init, headers })

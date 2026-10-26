@@ -541,6 +541,47 @@ describe('라이브러리 흐름', () => {
     openLibrary()
     expect(await screen.findByRole('button', { name: '샘플 연습곡 열기' })).toBeTruthy()
   })
+
+  it('전체 내려받기 · 골라서 내려받기 → 원본 파일을 ZIP 하나로', async () => {
+    const saved: { name: string; size: number }[] = []
+    const blobs = new Map<string, Blob>()
+    const orig = { create: URL.createObjectURL, revoke: URL.revokeObjectURL }
+    URL.createObjectURL = (b: Blob | MediaSource) => {
+      const url = `blob:${blobs.size}`
+      blobs.set(url, b as Blob)
+      return url
+    }
+    URL.revokeObjectURL = () => {}
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      saved.push({ name: this.download, size: blobs.get(this.href)?.size ?? -1 })
+    })
+    render(<App />)
+    await screen.findByRole('button', { name: '샘플 연습곡 열기' })
+    await addFiles([pdf('월광.pdf', 30)])
+    await screen.findByText('1 / 6')
+    openLibrary()
+
+    await act(async () => {
+      fireEvent.click(await screen.findByRole('button', { name: '전체 내려받기' }))
+    })
+    await screen.findByText(/악보 2개를 ZIP 으로 내려받았어요/)
+    expect(saved).toHaveLength(1)
+    expect(saved[0].name).toMatch(/^Volti 악보 \d{4}-\d{2}-\d{2}\.zip$/)
+    expect(saved[0].size).toBeGreaterThan(30 + 6 * 9) // 월광 30바이트 + 샘플 6장
+
+    // 골라서 하나만
+    fireEvent.click(screen.getByRole('button', { name: '선택' }))
+    fireEvent.click(screen.getByRole('button', { name: '월광 선택' }))
+    await act(async () => {
+      fireEvent.click(within(screen.getByRole('toolbar', { name: '선택한 악보' })).getByRole('button', { name: '내려받기' }))
+    })
+    await screen.findByText(/악보 1개를 ZIP 으로 내려받았어요/)
+    expect(saved).toHaveLength(2)
+    expect(saved[1].size).toBeLessThan(saved[0].size)
+    click.mockRestore()
+    URL.createObjectURL = orig.create
+    URL.revokeObjectURL = orig.revoke
+  })
 })
 
 describe('넘기기 전 대기', () => {

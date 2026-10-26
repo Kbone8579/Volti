@@ -17,7 +17,7 @@ import type { ApiScore, ApiScoreInput, ApiScoreList, ApiZoom } from '../api-type
 import { requireUser } from '../auth/session'
 import type { Env } from '../env'
 import { assertStorage, spendOps, uploadsPaused } from '../freeGuard'
-import { HttpError, json, readJson } from '../http'
+import { HttpError, json, readJson, secure } from '../http'
 import { MAX_FILE_BYTES, MAX_FILES, MAX_THUMB_BYTES, MB } from '../limits'
 
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/
@@ -116,10 +116,16 @@ export async function putFile(env: Env, request: Request, rawId: string, rawInde
   return json({ ok: true })
 }
 
+/**
+ * 올린 파일 돌려주기. 어떤 형식이든(PDF · 이미지 · 앞으로 gp5 등) 받되, 브라우저가 우리 사이트 안에서
+ * 「실행」하지 못하게: 내려받기로만(attachment) · 형식 추측 금지(nosniff) · 스크립트 금지 격리(CSP sandbox)
+ */
 async function sendObject(obj: R2ObjectBody | null): Promise<Response> {
   if (!obj) throw new HttpError(404, 'not_found', '파일이 서버에 없어요.')
-  const headers = new Headers({ 'cache-control': 'private, no-store' })
+  const headers = secure(new Headers({ 'cache-control': 'private, no-store' }))
   headers.set('content-type', obj.httpMetadata?.contentType ?? 'application/octet-stream')
+  headers.set('content-disposition', `attachment; filename*=UTF-8''${encodeURIComponent(obj.customMetadata?.name ?? 'file')}`)
+  headers.set('content-security-policy', "default-src 'none'; sandbox")
   if (obj.customMetadata?.name) headers.set('x-file-name', encodeURIComponent(obj.customMetadata.name))
   headers.set('content-length', String(obj.size))
   return new Response(obj.body, { headers })

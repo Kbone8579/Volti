@@ -1,0 +1,18 @@
+# 사이트 보안 헤더 — Cloudflare 가 화면 파일(HTML · JS · 그림)을 보낼 때 붙임.
+# (/api/* 응답은 server/http.ts 에서 따로 붙임)
+#
+# Content-Security-Policy: 이 사이트에서 불러와도 되는 곳만 허락
+#   - 스크립트: 우리 사이트만 (+ 얼굴 인식 · PDF 를 위한 WebAssembly)
+#   - 글꼴 · 글꼴 CSS: Pretendard (cdn.jsdelivr.net)
+#   - 얼굴 인식 모델: storage.googleapis.com
+#   - 프로필 사진: Google (*.googleusercontent.com)
+#   - 다른 사이트가 Volti 를 몰래 품기(iframe) 금지
+# 새 외부 주소를 쓰게 되면 여기에 추가해야 해요.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' blob: data: https://storage.googleapis.com; worker-src 'self' blob:; media-src 'self' blob: mediastream:; manifest-src 'self'; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000

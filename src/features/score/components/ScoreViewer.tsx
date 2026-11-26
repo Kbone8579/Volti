@@ -32,6 +32,8 @@ export interface NextTarget {
   /** 오른쪽 아래 구역 크기 (영역 대비 비율) */
   zone: number
   showZone: boolean
+  /** 왼쪽 위 ◀ (이전 페이지) — 「이전 페이지」를 켰을 때만 */
+  prev?: { progress: number; inZone: boolean; zone: number } | null
 }
 
 export type FlashKind = 'next' | 'prev' | 'edge' | 'down' | 'up'
@@ -427,6 +429,32 @@ export function ScoreViewer(p: Props) {
               style={{ width: `${nextTarget.zone * 100}%`, height: `${nextTarget.zone * 100}%` }}
               aria-hidden
             />
+          )}
+          {nextTarget.prev && (
+            <>
+              {nextTarget.showZone && (
+                <div
+                  className={`gaze-zone prev ${nextTarget.prev.inZone ? 'on' : ''}`}
+                  style={{ width: `${nextTarget.prev.zone * 100}%`, height: `${nextTarget.prev.zone * 100}%` }}
+                  aria-hidden
+                />
+              )}
+              <div className={`next-target prev ${nextTarget.prev.inZone ? 'look' : ''}`} aria-hidden>
+                <svg viewBox="0 0 64 64">
+                  <circle className="nt-bg" cx="32" cy="32" r={RING_R} />
+                  <circle
+                    className="nt-ring"
+                    cx="32"
+                    cy="32"
+                    r={RING_R}
+                    style={{ strokeDasharray: RING_C, strokeDashoffset: RING_C * (1 - nextTarget.prev.progress) }}
+                  />
+                </svg>
+                <span>
+                  <Play size={22} fill="currentColor" strokeWidth={1.5} />
+                </span>
+              </div>
+            </>
           )}
           <div className={`next-target ${nextTarget.inZone ? 'look' : ''}`} aria-hidden>
             <svg viewBox="0 0 64 64">

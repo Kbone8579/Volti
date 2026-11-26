@@ -25,6 +25,19 @@ describe('GestureDetector', () => {
     expect(run(new GestureDetector(), [...repeat(0, 5), ...repeat(15, 15)])).toEqual(['next'])
   })
 
+  it('「이전」 쪽만 유지 시간을 길게 할 수 있음 (prevHoldMs)', () => {
+    const params = { ...P, prevHoldMs: 600 }
+    // 0.4초 유지: 다음은 넘어가고, 이전은 아직
+    expect(run(new GestureDetector(), [...repeat(15, 13), ...repeat(0, 40)], params)).toEqual(['next'])
+    expect(run(new GestureDetector(), [...repeat(-15, 13), ...repeat(0, 40)], params)).toEqual([])
+    // 0.7초 유지 → 이전
+    expect(run(new GestureDetector(), repeat(-15, 22), params)).toEqual(['prev'])
+    // 진행도는 이전 쪽 시간 기준
+    const det = new GestureDetector()
+    det.update(-15, 0, params)
+    expect(det.update(-15, 300, params).holdProgress).toBeCloseTo(0.5)
+  })
+
   it('유지 시간 전에 풀리면 넘기지 않음', () => {
     expect(run(new GestureDetector(), [...repeat(15, 5), ...repeat(0, 10), ...repeat(15, 5)])).toEqual([])
   })

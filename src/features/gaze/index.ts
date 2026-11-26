@@ -8,4 +8,4 @@ import './gaze.css'
 
 export { GazeCalibrationOverlay, GazeDot, type GazeCalibUi } from './components/GazeCalibrationOverlay'
 export { GazeMap } from './components/GazeMap'
-export { calibrationPoints, correctOffset, fitGaze, gazeFeatures, type GazeModel, type GazeSample, GazeSmoother, inNextZone, type Point, predictGaze, predictGazeRaw, type Rect, ZONE_FRACTION, type ZoneSize } from './lib/gaze'
+export { calibrationPoints, correctOffset, fitGaze, gazeFeatures, type GazeModel, type GazeSample, GazeSmoother, inNextZone, inPrevZone, type Point, PREV_DWELL_FACTOR, prevZoneFraction, predictGaze, predictGazeRaw, type Rect, ZONE_FRACTION, type ZoneSize } from './lib/gaze'

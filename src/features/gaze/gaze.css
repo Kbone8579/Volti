@@ -51,6 +51,54 @@
 .gaze-zone.on {
   background: color-mix(in srgb, var(--next) 14%, transparent);
 }
+/* ◀ 이전 페이지 (왼쪽 위) — ▶ 를 거울처럼 */
+.next-target.prev {
+  right: auto;
+  bottom: auto;
+  left: 12px;
+  top: 12px;
+}
+.next-target.prev .nt-bg {
+  stroke: color-mix(in srgb, var(--prev) 35%, transparent);
+}
+.next-target.prev .nt-ring {
+  stroke: var(--prev);
+}
+.next-target.prev span {
+  color: var(--prev);
+  margin-left: -3px;
+  transform: scaleX(-1);
+}
+.next-target.prev.look .nt-bg {
+  fill: color-mix(in srgb, var(--prev) 18%, var(--surface));
+}
+.gaze-zone.prev {
+  right: auto;
+  bottom: auto;
+  left: 0;
+  top: 0;
+  border: 0;
+  border-bottom: 2px dashed color-mix(in srgb, var(--prev) 55%, transparent);
+  border-right: 2px dashed color-mix(in srgb, var(--prev) 55%, transparent);
+  border-radius: 0 0 14px 0;
+  background: color-mix(in srgb, var(--prev) 5%, transparent);
+}
+.gaze-zone.prev.on {
+  background: color-mix(in srgb, var(--prev) 14%, transparent);
+}
+.gm-zone.prev {
+  right: auto;
+  bottom: auto;
+  left: 0;
+  top: 0;
+  border: 0;
+  background: var(--prev-zone);
+  border-bottom: 1.5px dashed var(--prev);
+  border-right: 1.5px dashed var(--prev);
+}
+.gm-zone.prev.on {
+  background: color-mix(in srgb, var(--prev) 35%, transparent);
+}
 .gaze-dot {
   position: fixed;
   left: -11px;

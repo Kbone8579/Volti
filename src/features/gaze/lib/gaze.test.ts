@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calibrationPoints, correctOffset, fitGaze, GazeSmoother, inNextZone, predictGaze, solveLinear, type GazeSample } from './gaze'
+import { calibrationPoints, correctOffset, fitGaze, GazeSmoother, inNextZone, inPrevZone, predictGaze, solveLinear, type GazeSample } from './gaze'
 
 describe('gaze', () => {
   it('연립방정식 풀이', () => {
@@ -65,6 +65,18 @@ describe('gaze', () => {
     expect(inNextZone({ x: 950, y: 1200 }, rect, 'medium')).toBe(false) // 한참 아래 (악기 보기)
     expect(inNextZone({ x: 780, y: 700 }, rect, 'small')).toBe(false)
     expect(inNextZone({ x: 780, y: 700 }, rect, 'large')).toBe(true)
+  })
+
+  it('왼쪽 위 ◀ 구역 판정 (▶ 의 절반 크기, 모서리 바깥까지)', () => {
+    const rect = { left: 0, top: 50, width: 1000, height: 800 }
+    expect(inPrevZone({ x: 50, y: 100 }, rect, 'medium')).toBe(true) // 모서리
+    expect(inPrevZone({ x: -100, y: 0 }, rect, 'medium')).toBe(true) // 모서리 바깥 (왼쪽 위를 넘어 봄)
+    expect(inPrevZone({ x: 200, y: 100 }, rect, 'medium')).toBe(false) // 첫 줄을 조금 읽어 나감 (14% 밖)
+    expect(inPrevZone({ x: 50, y: 300 }, rect, 'medium')).toBe(false) // 둘째 줄 시작
+    expect(inPrevZone({ x: 50, y: 800 }, rect, 'medium')).toBe(false) // 마지막 줄 시작
+    expect(inPrevZone({ x: -400, y: 100 }, rect, 'medium')).toBe(false) // 한참 바깥
+    expect(inPrevZone({ x: 170, y: 170 }, rect, 'large')).toBe(true)
+    expect(inPrevZone({ x: 170, y: 170 }, rect, 'small')).toBe(false)
   })
 
   it('스무딩: 튀는 값을 누그러뜨리고, 오래 끊기면 새로 시작', () => {

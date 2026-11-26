@@ -133,6 +133,57 @@
   border-left-color: transparent;
 }
 
+/* ───────── 전체보기: 상단 바 · 카메라 패널을 숨기고 악보만 화면 가득 ─────────
+   카메라 패널은 없애지 않고 폭만 0 으로 (영상이 계속 흘러야 인식이 이어짐) */
+.tb-focus {
+  padding-inline: 10px;
+}
+.app.focus {
+  grid-template-rows: minmax(0, 1fr);
+}
+.app.focus .toolbar {
+  display: none;
+}
+.app.focus .main,
+.app.focus .main.panel-closed {
+  grid-template-columns: minmax(0, 1fr) 0px;
+}
+.app.focus .panel-tab {
+  display: none;
+}
+.app.focus .panel-scroll {
+  opacity: 0;
+}
+.app.focus .panel-wrap {
+  border: 0;
+}
+/* 오른쪽 위: 쪽수 · 끝내기 (시선 모드의 ◀ 는 왼쪽 위, ▶ 는 오른쪽 아래라 겹치지 않음) */
+.focus-bar {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(6px);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.focus-bar:hover,
+.focus-bar:focus-within {
+  opacity: 1;
+}
+.focus-bar .pager {
+  min-width: 0;
+  font-size: 14px;
+}
+
 .drop-hint {
   position: fixed;
   inset: 12px;
@@ -206,6 +257,11 @@
   .tb-right .seg {
     display: none;
   }
+  .app.focus .main,
+  .app.focus .main.panel-closed {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) 0px;
+  }
 }
 
 /* 아주 좁은 화면(폰) */
@@ -215,6 +271,17 @@
   }
   .toolbar {
     gap: 8px;
+  }
+}
+
+/* 1400px 미만(태블릿 · 노트북): 「전체보기」는 아이콘만 (툴바가 한 줄에 들어가게) */
+@media (max-width: 1399px) {
+  .tb-focus span {
+    display: none;
+  }
+  .tb-focus {
+    width: 40px;
+    padding: 0;
   }
 }
 

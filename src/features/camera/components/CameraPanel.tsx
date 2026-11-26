@@ -14,6 +14,8 @@ export interface GazePanelInfo {
   rect: Rect | null
   zone: number
   inZone: boolean
+  /** 왼쪽 위 ◀ 구역 (이전 페이지를 켰을 때만) */
+  prev: { zone: number; inZone: boolean } | null
   hasModel: boolean
   errorPx: number | null
   dwellMs: number
@@ -160,17 +162,27 @@ export function CameraPanel(p: Props) {
       </div>
 
       {isGaze ? (
-        <GazeMap
-          point={p.gaze.point}
-          rect={p.gaze.rect}
-          zone={p.gaze.zone}
-          inZone={p.gaze.inZone}
-          holdProgress={p.holdProgress}
-          active={p.side === 1}
-          hasModel={p.gaze.hasModel}
-          errorPx={p.gaze.errorPx}
-          dwellMs={p.gaze.dwellMs}
-        />
+        <>
+          <label className="toggle compact">
+            <span>
+              이전 페이지
+              <small className="muted">왼쪽 위 ◀ 칸을 오래 바라보면 이전 페이지 (실수로 뒤로 가지 않게 ▶ 의 2배 시간)</small>
+            </span>
+            <input type="checkbox" checked={!p.forwardOnly} onChange={(e) => p.onForwardOnly(!e.target.checked)} />
+          </label>
+          <GazeMap
+            point={p.gaze.point}
+            rect={p.gaze.rect}
+            zone={p.gaze.zone}
+            inZone={p.gaze.inZone}
+            prev={p.gaze.prev}
+            holdProgress={p.holdProgress}
+            side={p.side}
+            hasModel={p.gaze.hasModel}
+            errorPx={p.gaze.errorPx}
+            dwellMs={p.gaze.dwellMs}
+          />
+        </>
       ) : (
         <>
           <label className="toggle compact">

@@ -9,6 +9,8 @@ export interface ShortcutHandlers {
   onZoomReset: () => void
   /** → ↓ PageDown Space = 다음, ← ↑ PageUp = 이전 (블루투스 페달도 보통 이 키를 보냄) */
   onTurn: (dir: 'next' | 'prev') => void
+  /** F: 전체보기 켜고 끄기 */
+  onFocus: () => void
 }
 
 const NEXT_KEYS = ['ArrowRight', 'ArrowDown', 'PageDown', ' ']
@@ -29,6 +31,7 @@ export function useShortcuts(handlers: ShortcutHandlers) {
       if (e.key === '+' || e.key === '=') return h.onZoomStep(1)
       if (e.key === '-' || e.key === '_') return h.onZoomStep(-1)
       if (e.key === '0') return h.onZoomReset()
+      if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) return h.onFocus()
       if (NEXT_KEYS.includes(e.key)) {
         e.preventDefault()
         h.onTurn('next')

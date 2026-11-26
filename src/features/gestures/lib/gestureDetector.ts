@@ -20,6 +20,8 @@ export type DetectorPhase = 'armed' | 'holding' | 'cooldown' | 'waitNeutral'
 export interface DetectorParams {
   threshold: number
   holdMs: number
+  /** 「이전」 쪽만 유지 시간을 다르게 (없으면 holdMs) — 시선 모드는 실수로 뒤로 가지 않게 더 길게 */
+  prevHoldMs?: number
   cooldownMs: number
   forwardOnly: boolean
   /** 이 비율 아래로 돌아와야 다시 무장 (기본 0.5) */
@@ -101,7 +103,7 @@ export class GestureDetector {
       const along = d * this.side
       if (along >= holdFloor) {
         this.peak = Math.max(this.peak, Math.abs(d))
-        if (t - this.holdStart >= p.holdMs) {
+        if (t - this.holdStart >= this.holdFor(p)) {
           event = { kind: this.side === 1 ? 'next' : 'prev', at: t, peak: this.peak }
           this.phase = 'cooldown'
           this.cooldownUntil = t + p.cooldownMs
@@ -114,6 +116,10 @@ export class GestureDetector {
     return this.snapshot(t, p, event)
   }
 
+  private holdFor(p: DetectorParams): number {
+    return this.side === -1 ? (p.prevHoldMs ?? p.holdMs) : p.holdMs
+  }
+
   private toArmed() {
     this.phase = 'armed'
     this.side = 0
@@ -121,8 +127,8 @@ export class GestureDetector {
   }
 
   private snapshot(t: number, p: DetectorParams, event: GestureEvent | null): DetectorUpdate {
-    const holdProgress =
-      this.phase === 'holding' ? (p.holdMs <= 0 ? 1 : Math.min(1, (t - this.holdStart) / p.holdMs)) : 0
+    const need = this.holdFor(p)
+    const holdProgress = this.phase === 'holding' ? (need <= 0 ? 1 : Math.min(1, (t - this.holdStart) / need)) : 0
     return { phase: this.phase, side: this.phase === 'holding' ? this.side : 0, holdProgress, event }
   }
 }

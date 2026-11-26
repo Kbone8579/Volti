@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, LibraryBig, Settings as SettingsIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LibraryBig, Maximize, Settings as SettingsIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Settings } from '@/features/settings'
 
@@ -18,6 +18,9 @@ interface Props {
   zoom: ReactNode
   /** 계정 동기화 표시 자리 (로그인했을 때 SyncIndicator) */
   sync?: ReactNode
+  /** 전체보기 (악보만 화면 가득) — 악보를 보고 있을 때만 */
+  canFocus: boolean
+  onFocus: () => void
   onSettings: () => void
 }
 
@@ -27,7 +30,7 @@ const VIEW_MODES = [
   ['auto', '자동'],
 ] as const
 
-/** 상단 바: [로고 · 라이브러리 · 제목]  [◀ 쪽수 ▶]  [페이지 배치 · 확대 · 동기화 · 설정] */
+/** 상단 바: [로고 · 라이브러리 · 제목]  [◀ 쪽수 ▶]  [페이지 배치 · 확대 · 동기화 · 전체보기 · 설정] */
 export function Toolbar(p: Props) {
   return (
     <header className="toolbar">
@@ -64,6 +67,10 @@ export function Toolbar(p: Props) {
         </div>
         {p.zoom}
         {p.sync}
+        <button className="btn tb-focus" onClick={p.onFocus} disabled={!p.canFocus} aria-label="전체보기" title="전체보기 — 악보만 화면 가득 (F)">
+          <Maximize size={18} />
+          <span>전체보기</span>
+        </button>
         <button className="btn icon" onClick={p.onSettings} aria-label="설정">
           <SettingsIcon size={19} />
         </button>

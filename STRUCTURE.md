@@ -41,9 +41,10 @@ volti/
     ├── app/                  ── 앱 껍데기: 화면 조립 · 기능 연결 · 전역 스타일
     │   ├── App.tsx           화면 전체 조립 + 카메라 → 제스처 → 넘김 흐름 연결
     │   ├── App.flow.test.tsx 앱 전체 흐름 테스트 (가짜 카메라로 클릭·제스처 → 화면 확인)
-    │   ├── Toolbar.tsx       상단 바 (로고 · 라이브러리 · ◀ 쪽수 ▶ · 배치 · 확대 · 설정)
+    │   ├── Toolbar.tsx       상단 바 (로고 · 라이브러리 · ◀ 쪽수 ▶ · 배치 · 확대 · 전체보기 · 설정)
     │   ├── hooks/
-    │   │   └── useShortcuts.ts   키보드 · 블루투스 페달 단축키
+    │   │   ├── useShortcuts.ts   키보드 · 블루투스 페달 단축키
+    │   │   └── useFocusMode.ts   전체보기 (악보만 화면 가득 + 브라우저 전체 화면)
     │   └── styles/
     │       ├── tokens.css    색 · 크기 변수 (밝은/어두운 화면), 글꼴
     │       ├── base.css      기본 스타일 · 버튼 · 세그먼트 · 꼬리표 · 진행 막대 · 작은 유틸
@@ -157,12 +158,13 @@ features/<기능>/
 | 파일 | 하는 일 |
 |---|---|
 | `App.tsx` | **모든 기능을 이어 붙이는 곳.** 상태(지금 악보, 쪽, 배율, 카메라, 캘리브레이션, 체험 단계 …)를 들고, 카메라 프레임마다 제스처를 판정해서 페이지를 넘겨요. 화면 배치(툴바 · 악보 · 카메라 패널 · 라이브러리 · 설정 서랍 · 알림)도 여기서 조립해요. 아래 [5. App.tsx 구역 지도](#5-apptsx-구역-지도) 참고 |
-| `Toolbar.tsx` | 상단 바. 확대 컨트롤은 `zoom` 자리, 동기화 구름 버튼은 `sync` 자리로 받아서 끼워 넣어요 |
-| `hooks/useShortcuts.ts` | 키보드·페달: →↓PageDown Space = 다음, ←↑PageUp = 이전, +/−/0 = 확대, Esc = 열린 것 닫기. 글자 입력 칸에선 무시 |
+| `Toolbar.tsx` | 상단 바. 확대 컨트롤은 `zoom` 자리, 동기화 구름 버튼은 `sync` 자리로 받아서 끼워 넣어요. 전체보기 버튼(1400px 미만은 아이콘만) |
+| `hooks/useShortcuts.ts` | 키보드·페달: →↓PageDown Space = 다음, ←↑PageUp = 이전, +/−/0 = 확대, F = 전체보기, Esc = 열린 것 닫기. 글자 입력 칸에선 무시 |
+| `hooks/useFocusMode.ts` | 전체보기: 켜면 `.app.focus` (상단 바 숨김 · 카메라 패널 폭 0 — 영상은 계속 흘러 인식 유지) + 지원하면 브라우저 전체 화면. 브라우저 쪽에서 전체 화면이 풀리면 같이 끝. 아이폰 사파리처럼 전체 화면 API 가 없으면 앱 안에서만 |
 | `styles/tokens.css` | 색·크기 변수. `@media (prefers-color-scheme: dark)` 에서 어두운 색으로 바뀜. 글꼴(Pretendard) 불러오기 |
 | `styles/base.css` | 기본 글꼴·크기, `.btn`(버튼), `.seg`(세그먼트), `.tag`(꼬리표), `.calib-bar`(진행 막대), `.icon-text`, `.muted` 같은 공용 클래스 |
-| `styles/layout.css` | `.toolbar`, `.main`(악보 + 패널 그리드), `.panel-tab`(패널 접기 탭), 끌어다 놓기 안내, 그리고 폰(≤760px)·아주 좁은 폰(≤480px)·태블릿 세로(761~1100px) 배치 |
-| `App.flow.test.tsx` | 앱 전체를 jsdom 에 그리고, 카메라·악보 파일·저장소·서버(fetch)를 가짜로 바꿔서 실제 사용 흐름을 확인 (26개) |
+| `styles/layout.css` | `.toolbar`, `.main`(악보 + 패널 그리드), `.panel-tab`(패널 접기 탭), 전체보기(`.app.focus` · `.focus-bar`), 끌어다 놓기 안내, 그리고 폰(≤760px)·아주 좁은 폰(≤480px)·태블릿 세로(761~1100px) 배치 |
+| `App.flow.test.tsx` | 앱 전체를 jsdom 에 그리고, 카메라·악보 파일·저장소·서버(fetch)를 가짜로 바꿔서 실제 사용 흐름을 확인 (29개) |
 
 ### 3-4. `src/features/` — 기능별
 
@@ -204,18 +206,18 @@ features/<기능>/
 #### `gestures/` — 제스처 판정 (모든 모드 공통)
 | 파일 | 하는 일 |
 |---|---|
-| `lib/gestureDetector.ts` | 판정 상태머신: 기준을 넘고 → 잠깐 유지하면 → 넘김 1번 → 쉬는 시간 → 중립으로 돌아와야 다시. 스치는 움직임·떨림 무시 |
+| `lib/gestureDetector.ts` | 판정 상태머신: 기준을 넘고 → 잠깐 유지하면 → 넘김 1번 → 쉬는 시간 → 중립으로 돌아와야 다시. 스치는 움직임·떨림 무시. 「이전」 쪽만 유지 시간을 따로(`prevHoldMs`) |
 | `lib/calibration.ts` | 캘리브레이션 계산: 평소 자세(중앙값)와 동작 크기로 기준값·방향·임계값 정하기 |
-| 테스트 | `gestures.test.ts`(13) |
+| 테스트 | `gestures.test.ts`(14) |
 
 #### `gaze/` — 시선 모드
 | 파일 | 하는 일 |
 |---|---|
-| `lib/gaze.ts` | 눈 신호 → 화면 좌표 추정(릿지 회귀), 9점 보정, 빠른 보정(위치만 다시), ▶ 칸 안인지 판정, 흔들림 줄이기 |
+| `lib/gaze.ts` | 눈 신호 → 화면 좌표 추정(릿지 회귀), 9점 보정, 빠른 보정(위치만 다시), ▶ 칸(오른쪽 아래) · ◀ 칸(왼쪽 위, ▶ 의 절반 크기 · 2배 시간) 안인지 판정, 흔들림 줄이기 |
 | `components/GazeMap.tsx` | 패널의 작은 화면 지도 (지금 보는 곳 표시) |
 | `components/GazeCalibrationOverlay.tsx` | 화면 전체를 덮는 시선 보정 화면 + 시선 점(`GazeDot`) |
 | `gaze.css` | ▶ 칸, 시선 점, 보정 화면 |
-| 테스트 | `gaze.test.ts`(6) |
+| 테스트 | `gaze.test.ts`(7) |
 
 #### `custom-gesture/` — 내 동작
 | 파일 | 하는 일 |
@@ -422,19 +424,19 @@ features/<기능>/
 ## 7. 테스트
 
 ```bash
-npm test            # 전체 (104개)
+npm test            # 전체 (109개)
 npm run typecheck   # 타입 검사 (화면 + 서버)
 ```
 
 | 파일 | 개수 | 확인하는 것 |
 |---|---|---|
-| `app/App.flow.test.tsx` | 26 | 실제 사용 흐름 — 시선·고개·내 동작 넘김, 라이브러리(내려받기 포함), 넘기기 전 대기, 확대, 30초 체험, 계정 · 백업 안내 · 악보 추가 전 로그인 권유 |
+| `app/App.flow.test.tsx` | 29 | 실제 사용 흐름 — 시선(◀ 이전 포함)·고개·내 동작 넘김, 라이브러리(내려받기 포함), 전체보기, 넘기기 전 대기, 확대, 30초 체험, 계정 · 백업 안내 · 악보 추가 전 로그인 권유 |
 | `features/sync/lib/syncEngine.test.ts` | 9 | 두 기기 동기화 (추가 · 고치기 · 지우기 · 되살리기 · 합치기 · 공간 부족 · 서버 무료 한도 · 오프라인 · 설정) |
 | `features/sync/lib/syncPlan.test.ts` | 6 | 동기화 계획 규칙 |
-| `features/gestures/lib/gestures.test.ts` | 13 | 판정기(유지·쿨다운·중립 복귀·떨림), 캘리브레이션 |
+| `features/gestures/lib/gestures.test.ts` | 14 | 판정기(유지·쿨다운·중립 복귀·떨림·이전 쪽 유지 시간), 캘리브레이션 |
 | `features/score/lib/zoom.test.ts` | 11 | 확대 계산, 넘겨도 위치 유지 |
 | `features/custom-gesture/lib/customGesture.test.ts` | 7 | 내 동작 학습·구분, 이전 동작만 추가 |
-| `features/gaze/lib/gaze.test.ts` | 6 | 시선 추정·보정·▶ 칸 판정 |
+| `features/gaze/lib/gaze.test.ts` | 7 | 시선 추정·보정·▶ · ◀ 칸 판정 |
 | `features/library/lib/libraryDb.test.ts` | 7 | 라이브러리 저장·조회·삭제 · 지운 기록 · id 바꾸기 |
 | `features/library/lib/exportLibrary.test.ts` | 3 | 내려받기 ZIP (이름 규칙 · 내용 · CRC · 한글) |
 | `features/camera/lib/signals.test.ts` | 5 | 얼굴 → 신호 변환 |

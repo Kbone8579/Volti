@@ -107,7 +107,7 @@ export const MODE_META: Record<GestureMode, ModeMeta> = {
     minThreshold: 0.3,
     maxThreshold: 0.9,
     howTo: '마지막 줄 끝의 ▶ 버튼을 잠깐 바라보기',
-    goodFor: '모든 악기 · 시선 캘리브레이션 필요 · 다음 페이지만',
+    goodFor: '모든 악기 · 시선 캘리브레이션 필요 · 이전 페이지는 왼쪽 위 ◀ (켜면)',
   },
   custom: {
     label: '내 동작',

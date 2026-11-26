@@ -184,6 +184,25 @@ export function inNextZone(p: Point, rect: Rect, size: ZoneSize): boolean {
   return fx >= 1 - z && fy >= 1 - z && fx <= 1.2 && fy <= 1.15
 }
 
+/** ◀ 구역은 ▶ 구역의 절반 크기 — 연주 중 첫 줄 · 도돌이표로 왼쪽 위를 읽을 때 잘못 뒤로 가지 않게 */
+export const PREV_ZONE_SCALE = 0.5
+/** ◀ 구역은 설정한 바라보는 시간의 2배를 봐야 넘어감 (뒤로 가는 일은 드물고, 실수하면 더 곤란해서) */
+export const PREV_DWELL_FACTOR = 2
+
+export const prevZoneFraction = (size: ZoneSize) => ZONE_FRACTION[size] * PREV_ZONE_SCALE
+
+/**
+ * 악보 영역의 왼쪽 위 모서리(◀ 이전 페이지)를 보고 있는지.
+ * 왼쪽 위는 악기를 보는 방향(아래)과 반대라 연주 중에 잘 안 가는 곳. 모서리 밖으로 넘어간 시선(20%)까지 인정.
+ */
+export function inPrevZone(p: Point, rect: Rect, size: ZoneSize): boolean {
+  if (rect.width <= 0 || rect.height <= 0) return false
+  const fx = (p.x - rect.left) / rect.width
+  const fy = (p.y - rect.top) / rect.height
+  const z = prevZoneFraction(size)
+  return fx <= z && fy <= z && fx >= -0.2 && fy >= -0.2
+}
+
 /** 지수 이동 평균으로 시선 점 떨림 줄이기 */
 export class GazeSmoother {
   private p: Point | null = null

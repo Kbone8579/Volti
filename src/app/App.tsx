@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, LibraryBig } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LibraryBig, Minimize } from 'lucide-react'
 import { CameraPanel, extractSignals, modeValue, useFaceTracker, type CalibStep, type ChartPoint, type FaceSignals, type TrackerFrame } from '@/features/camera'
 import { customFeatures, customValue, MIN_NEUTRAL, rebaseCustom, RecordingBanner, trainCustom, withGesture, type RecordingUi } from '@/features/custom-gesture'
 import {
@@ -7,17 +7,20 @@ import {
   correctOffset,
   fitGaze,
   GazeCalibrationOverlay,
+  type GazeCalibUi,
   GazeDot,
   gazeFeatures,
+  type GazeSample,
   GazeSmoother,
   inNextZone,
+  inPrevZone,
+  type Point,
   predictGaze,
   predictGazeRaw,
-  ZONE_FRACTION,
-  type GazeCalibUi,
-  type GazeSample,
-  type Point,
+  PREV_DWELL_FACTOR,
+  prevZoneFraction,
   type Rect,
+  ZONE_FRACTION,
 } from '@/features/gaze'
 import { calibrateGesture, GestureDetector, median, MIN_SAMPLES, type DetectorPhase, type DetectorUpdate, type GestureEvent } from '@/features/gestures'
 import {
@@ -84,6 +87,7 @@ import { BackupNote, SyncIndicator, useSync, type SyncResult } from '@/features/
 import { useElementSize } from '@/shared/hooks/useElementSize'
 import { useNotice } from '@/shared/hooks/useNotice'
 import { Toast } from '@/shared/ui/Toast'
+import { useFocusMode } from './hooks/useFocusMode'
 import { useShortcuts } from './hooks/useShortcuts'
 import { Toolbar } from './Toolbar'
 
@@ -108,6 +112,8 @@ interface Live {
   /** 시선 모드: 화면(뷰포트) 좌표 */
   gaze: Point | null
   inZone: boolean
+  /** 왼쪽 위 ◀ 구역 (시선 모드 · 이전 페이지 켬) */
+  inPrevZone: boolean
   rect: Rect | null
 }
 const EMPTY_LIVE: Live = {
@@ -120,6 +126,7 @@ const EMPTY_LIVE: Live = {
   calibProgress: 0,
   gaze: null,
   inZone: false,
+  inPrevZone: false,
   rect: null,
 }
 const IDLE_UPDATE: DetectorUpdate = { phase: 'armed', side: 0, holdProgress: 0, event: null }
@@ -529,6 +536,7 @@ export default function App() {
   const smootherRef = useRef<GazeSmoother>(null)
   smootherRef.current ??= new GazeSmoother()
   const zoneEmaRef = useRef(0)
+  const prevZoneEmaRef = useRef(0)
   const chartRef = useRef<ChartPoint[]>([])
   const [live, setLive] = useState<Live>(EMPTY_LIVE)
   const lastLiveRef = useRef({ t: 0, side: 0 as 0 | 1 | -1 })
@@ -560,6 +568,7 @@ export default function App() {
   const resetGazeTracking = () => {
     smootherRef.current?.reset()
     zoneEmaRef.current = 0
+    prevZoneEmaRef.current = 0
   }
 
   /** 제스처 → 넘김 예약. 새로 예약했으면 true */
@@ -763,6 +772,7 @@ export default function App() {
     let d: number | null = null
     let gaze: Point | null = null
     let inZone = false
+    let inPrev = false
     let tourAnySide = false
     const rect = readScoreRect()
 
@@ -789,18 +799,22 @@ export default function App() {
         const g = predictGaze(s.gazeModel, f)
         gaze = smootherRef.current!.update({ x: g.x * window.innerWidth, y: g.y * window.innerHeight }, t)
         inZone = rect ? inNextZone(gaze, rect, s.gazeZone) : false
-        // 한두 프레임 튀어도 끊기지 않게 구역 판정을 지수평균
+        // 이전 페이지를 켰으면 왼쪽 위 ◀ 구역도 (▶ 의 절반 크기, 2배 시간)
+        inPrev = !s.forwardOnly && rect ? inPrevZone(gaze, rect, s.gazeZone) : false
+        // 한두 프레임 튀어도 끊기지 않게 구역 판정을 지수평균. ▶ 쪽은 +, ◀ 쪽은 −
         zoneEmaRef.current = zoneEmaRef.current * 0.6 + (inZone ? 0.4 : 0)
-        d = zoneEmaRef.current
+        prevZoneEmaRef.current = prevZoneEmaRef.current * 0.6 + (inPrev ? 0.4 : 0)
+        d = zoneEmaRef.current - prevZoneEmaRef.current
         upd = detector.update(d, t, {
           threshold: GAZE_ZONE_THRESHOLD,
           holdMs: s.gazeDwellMs,
+          prevHoldMs: s.gazeDwellMs * PREV_DWELL_FACTOR,
           cooldownMs: s.cooldownMs,
-          forwardOnly: true,
+          forwardOnly: s.forwardOnly,
         })
       } else {
         resetGazeTracking()
-        upd = detector.update(null, t, { threshold: GAZE_ZONE_THRESHOLD, holdMs: s.gazeDwellMs, cooldownMs: s.cooldownMs, forwardOnly: true })
+        upd = detector.update(null, t, { threshold: GAZE_ZONE_THRESHOLD, holdMs: s.gazeDwellMs, cooldownMs: s.cooldownMs, forwardOnly: s.forwardOnly })
       }
     } else if (mode === 'custom' && customRecRef.current.step !== 'idle') {
       detector.reset()
@@ -855,7 +869,7 @@ export default function App() {
     const last = lastLiveRef.current
     if (t - last.t >= LIVE_INTERVAL || upd.event || upd.side !== last.side) {
       lastLiveRef.current = { t, side: upd.side }
-      setLive({ faceVisible: !!sig, sig, d, side: upd.side, phase: upd.phase, holdProgress: upd.holdProgress, calibProgress, gaze, inZone, rect })
+      setLive({ faceVisible: !!sig, sig, d, side: upd.side, phase: upd.phase, holdProgress: upd.holdProgress, calibProgress, gaze, inZone, inPrevZone: inPrev, rect })
     }
   }
 
@@ -1062,9 +1076,19 @@ export default function App() {
     if (!scoreRef.current) return
     setZoom(nextStep(viewInfo.z, dir))
   }
+  /* ───────── 전체보기 (상단 바 · 카메라 패널 숨기고 악보만 화면 가득) ───────── */
+  const focus = useFocusMode()
+  const canFocus = !!score && !libraryOpen
+  // 라이브러리로 가거나 악보가 닫히면 전체보기도 끝
+  const { on: focusOn, exit: exitFocus } = focus
+  useEffect(() => {
+    if (focusOn && !canFocus) exitFocus()
+  }, [focusOn, exitFocus, canFocus])
+
   useShortcuts({
     onEscape: () => {
       if (schedulerRef.current?.pending) return void cancelPending()
+      if (focus.on) return focus.exit()
       if (tourRef.current.step !== 'off') return endTour()
       if (libraryOpenRef.current && scoreRef.current) return setLibraryOpen(false)
       if (gazeCalibRef.current.step !== 'idle') return setGazeCalib({ step: 'idle' }, { step: 'idle' })
@@ -1074,6 +1098,7 @@ export default function App() {
     onZoomStep: zoomStep,
     onZoomReset: () => setZoom(1),
     onTurn: manualTurn,
+    onFocus: () => (focus.on ? focus.exit() : canFocus && focus.enter()),
   })
 
   /* ───────── 화면 ───────── */
@@ -1115,7 +1140,7 @@ export default function App() {
 
   return (
     <div
-      className={`app ${dragging ? 'dragging' : ''}`}
+      className={`app ${dragging ? 'dragging' : ''} ${focus.on ? 'focus' : ''}`}
       onDragOver={(e) => {
         if (!e.dataTransfer.types.includes('Files')) return
         e.preventDefault()
@@ -1159,6 +1184,8 @@ export default function App() {
           />
         }
         sync={signedIn ? <SyncIndicator sync={sync} onClick={() => openDrawer('account')} /> : undefined}
+        canFocus={canFocus}
+        onFocus={focus.enter}
         onSettings={() => setDrawerOpen(true)}
       />
 
@@ -1190,11 +1217,22 @@ export default function App() {
                     inZone: live.inZone,
                     zone: ZONE_FRACTION[settings.gazeZone],
                     showZone: settings.showGazeDot && running && !!settings.gazeModel,
+                    prev: settings.forwardOnly
+                      ? null
+                      : { progress: live.side === -1 ? live.holdProgress : 0, inZone: live.inPrevZone, zone: prevZoneFraction(settings.gazeZone) },
                   }
                 : null
             }
           />
           {pending && <PendingBadge pending={pending} onCancel={cancelPending} />}
+          {focus.on && (
+            <div className="focus-bar">
+              <span className="pager mono">{pageLabel(index, nav)}</span>
+              <button className="btn small" onClick={focus.exit} aria-label="전체보기 끝내기" title="전체보기 끝내기 (Esc)">
+                <Minimize size={16} /> 끝내기
+              </button>
+            </div>
+          )}
           <TourLayer
             tour={tour}
             covered={libraryOpen || drawerOpen || gazeUi.step !== 'idle' || customUi.step !== 'idle'}
@@ -1275,6 +1313,7 @@ export default function App() {
               rect: live.rect ?? readScoreRect(),
               zone: ZONE_FRACTION[settings.gazeZone],
               inZone: live.inZone,
+              prev: settings.forwardOnly ? null : { zone: prevZoneFraction(settings.gazeZone), inZone: live.inPrevZone },
               hasModel: !!settings.gazeModel,
               errorPx: settings.gazeModel?.errorPx ?? null,
               dwellMs: settings.gazeDwellMs,

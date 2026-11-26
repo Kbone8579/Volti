@@ -223,6 +223,46 @@ describe('시선 모드 흐름', () => {
     expect(screen.getByText('3 / 6')).toBeTruthy()
   })
 
+  it('이전 페이지를 켜면 왼쪽 위 ◀ 칸을 (▶ 의 2배 시간) 바라볼 때 이전 페이지', async () => {
+    await setup()
+    fireEvent.click(screen.getByRole('tab', { name: '시선' }))
+    fireEvent.click(screen.getByRole('button', { name: '시선 캘리브레이션' }))
+    for (let guard = 0; guard < 400 && document.querySelector('.gc-dot'); guard++) {
+      const dot = document.querySelector<HTMLElement>('.gc-dot')!
+      feed(lookingAt(parseFloat(dot.style.left), parseFloat(dot.style.top)), 66)
+    }
+    const r = SCORE_RECT
+    const middle = () => feed(lookingAt(r.left + r.width / 2, r.top + r.height / 2), 1000)
+    const next = { x: r.left + r.width - NEXT_TARGET_INSET, y: r.top + r.height - NEXT_TARGET_INSET }
+    const prev = { x: r.left + NEXT_TARGET_INSET, y: r.top + NEXT_TARGET_INSET }
+    feed(lookingAt(next.x, next.y), 1500)
+    expect(screen.getByText('2 / 6')).toBeTruthy()
+    middle()
+
+    // 꺼져 있으면 ◀ 자리를 오래 봐도 그대로 (◀ 표시도 없음)
+    feed(lookingAt(prev.x, prev.y), 3000)
+    expect(screen.getByText('2 / 6')).toBeTruthy()
+    expect(document.querySelector('.next-target.prev')).toBeNull()
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /이전 페이지/ }))
+    expect(document.querySelector('.next-target.prev')).toBeTruthy()
+    middle()
+
+    // ▶ 와 같은 시간(1.2초)으로는 아직 → 2배(약 1.8초)를 넘기면 이전 페이지
+    feed(lookingAt(prev.x, prev.y), 1200)
+    expect(screen.getByText('2 / 6')).toBeTruthy()
+    feed(lookingAt(prev.x, prev.y), 1200)
+    expect(screen.getByText('1 / 6')).toBeTruthy()
+    middle()
+
+    // 첫 줄을 읽는 정도(모서리에서 오른쪽으로 들어간 곳)는 오래 봐도 그대로
+    feed(lookingAt(r.left + r.width * 0.3, r.top + r.height * 0.08), 4000)
+    expect(screen.getByText('1 / 6')).toBeTruthy()
+    // ▶ 는 그대로 동작
+    feed(lookingAt(next.x, next.y), 1500)
+    expect(screen.getByText('2 / 6')).toBeTruthy()
+  })
+
   it('빠른 보정: 시선이 어긋나도 ▶ 를 보며 보정하면 다시 넘어감', async () => {
     await setup()
     fireEvent.click(screen.getByRole('tab', { name: '시선' }))
@@ -581,6 +621,74 @@ describe('라이브러리 흐름', () => {
     click.mockRestore()
     URL.createObjectURL = orig.create
     URL.revokeObjectURL = orig.revoke
+  })
+})
+
+describe('전체보기', () => {
+  it('버튼 · F 키로 악보만 화면 가득 → 넘기기는 그대로 · Esc 나 브라우저 전체 화면이 풀리면 끝', async () => {
+    let fsEl: Element | null = null
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => fsEl })
+    const req = vi.fn(async () => {
+      fsEl = document.documentElement
+      document.dispatchEvent(new Event('fullscreenchange'))
+    })
+    const exit = vi.fn(async () => {
+      fsEl = null
+      document.dispatchEvent(new Event('fullscreenchange'))
+    })
+    Object.assign(document.documentElement, { requestFullscreen: req })
+    Object.assign(document, { exitFullscreen: exit })
+    const app = () => document.querySelector('.app')!
+
+    render(<App />)
+    // 라이브러리에서는 못 씀
+    await screen.findByRole('button', { name: '샘플 연습곡 열기' })
+    expect((screen.getByRole('button', { name: '전체보기' }) as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: '샘플 연습곡 열기' }))
+    await screen.findByText('1 / 6')
+
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: '전체보기' })))
+    expect(app().classList.contains('focus')).toBe(true)
+    expect(req).toHaveBeenCalledTimes(1)
+    const bar = document.querySelector<HTMLElement>('.focus-bar')!
+    expect(within(bar).getByText('1 / 6')).toBeTruthy()
+
+    // 전체보기 중에도 넘기기 (키보드 · 페달)
+    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    expect(within(bar).getByText('2 / 6')).toBeTruthy()
+
+    // Esc → 끝 (브라우저 전체 화면도 풂)
+    await act(async () => fireEvent.keyDown(window, { key: 'Escape' }))
+    expect(app().classList.contains('focus')).toBe(false)
+    expect(exit).toHaveBeenCalledTimes(1)
+    expect(document.querySelector('.focus-bar')).toBeNull()
+
+    // F 키로 다시 → 사용자가 브라우저 쪽에서 전체 화면을 끄면(아래로 밀기 등) 전체보기도 끝
+    await act(async () => fireEvent.keyDown(window, { key: 'f' }))
+    expect(app().classList.contains('focus')).toBe(true)
+    await act(async () => {
+      fsEl = null
+      document.dispatchEvent(new Event('fullscreenchange'))
+    })
+    expect(app().classList.contains('focus')).toBe(false)
+
+    // 끝내기 버튼
+    await act(async () => fireEvent.keyDown(window, { key: 'F' }))
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: '전체보기 끝내기' })))
+    expect(app().classList.contains('focus')).toBe(false)
+
+    delete (document.documentElement as { requestFullscreen?: unknown }).requestFullscreen
+    delete (document as { exitFullscreen?: unknown }).exitFullscreen
+    delete (document as { fullscreenElement?: unknown }).fullscreenElement
+  })
+
+  it('전체 화면을 못 쓰는 브라우저(아이폰 사파리)에서도 앱 안에서 꽉 차게', async () => {
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: '샘플 연습곡 열기' }))
+    await screen.findByText('1 / 6')
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: '전체보기' })))
+    expect(document.querySelector('.app')!.classList.contains('focus')).toBe(true)
+    expect(document.querySelector('.focus-bar')).toBeTruthy()
   })
 })
 
